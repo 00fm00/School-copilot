@@ -12,7 +12,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       'development-jwt-access-secret-minimum-16-chars',
     );
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        ExtractJwt.fromUrlQueryParameter('token'),
+      ]),
       ignoreExpiration: false,
       secretOrKey: secret,
     });

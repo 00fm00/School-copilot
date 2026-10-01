@@ -15,6 +15,9 @@ export class AppDocument {
   @Prop({ required: true })
   storagePath!: string;
 
+  @Prop({ type: String, default: null })
+  fileUrl?: string | null;
+
   @Prop({ required: true, default: 'application/pdf' })
   mimeType!: string;
 

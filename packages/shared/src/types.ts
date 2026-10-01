@@ -47,6 +47,7 @@ export interface DocumentDto {
   classScope: string[];
   uploadedBy: string;
   version: number;
+  fileUrl?: string;
   createdAt: string;
   updatedAt: string;
 }

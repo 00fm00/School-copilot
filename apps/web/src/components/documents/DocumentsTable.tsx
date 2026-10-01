@@ -13,6 +13,8 @@ import {
   RefreshCw,
   Upload,
   Trash2,
+  Eye,
+  ExternalLink,
 } from 'lucide-react';
 
 interface DocumentsTableProps {
@@ -125,7 +127,19 @@ export function DocumentsTable({ documents, isLoading }: DocumentsTableProps) {
               documents.map((doc) => (
                 <tr key={doc.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="py-3.5 px-4 font-medium text-slate-900">
-                    <div className="font-semibold text-slate-900">{doc.title}</div>
+                    {doc.fileUrl ? (
+                      <a
+                        href={doc.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group inline-flex items-center gap-1.5 font-semibold text-slate-900 hover:text-indigo-600 transition-colors"
+                      >
+                        <span>{doc.title}</span>
+                        <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-indigo-600 transition-colors inline" />
+                      </a>
+                    ) : (
+                      <div className="font-semibold text-slate-900">{doc.title}</div>
+                    )}
                     <div className="text-[11px] text-slate-400">
                       {doc.originalName} • v{doc.version}
                     </div>
@@ -158,6 +172,17 @@ export function DocumentsTable({ documents, isLoading }: DocumentsTableProps) {
                   </td>
                   <td className="py-3.5 px-4 text-right">
                     <div className="flex items-center justify-end gap-1">
+                      {doc.fileUrl && (
+                        <a
+                          href={doc.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Preview PDF"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors inline-flex items-center"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </a>
+                      )}
                       <button
                         title="Replace PDF file"
                         onClick={() => handleTriggerReplace(doc.id)}

@@ -14,7 +14,9 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
@@ -82,6 +84,24 @@ export class DocumentsController {
   @ApiResponse({ status: 200, description: 'Document details' })
   async getById(@Param('id') id: string) {
     return this.documentsService.findById(id);
+  }
+
+  @Get(':id/preview')
+  @ApiOperation({ summary: 'Preview document PDF inline or redirect to cloud CDN' })
+  @ApiResponse({ status: 200, description: 'Document preview stream' })
+  @ApiResponse({ status: 302, description: 'Redirect to Cloudinary CDN URL' })
+  async preview(@Param('id') id: string, @Res() res: Response) {
+    const file = await this.documentsService.getFile(id);
+    if (file.fileUrl && file.fileUrl.startsWith('http')) {
+      return res.redirect(HttpStatus.FOUND, file.fileUrl);
+    }
+    const { buffer } = await this.documentsService.getFileBuffer(id);
+    res.setHeader('Content-Type', file.mimeType || 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename="${encodeURIComponent(file.originalName)}"`,
+    );
+    return res.send(buffer);
   }
 
   @Patch(':id')

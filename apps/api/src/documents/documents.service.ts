@@ -34,6 +34,11 @@ export class DocumentsService {
       classScope: doc.classScope,
       uploadedBy: doc.uploadedBy.toString(),
       version: doc.version,
+      fileUrl:
+        doc.fileUrl ||
+        (doc.storagePath.startsWith('http')
+          ? doc.storagePath
+          : `/api/documents/${doc._id}/preview`),
       createdAt: (doc.createdAt || new Date()).toISOString(),
       updatedAt: (doc.updatedAt || new Date()).toISOString(),
     };
@@ -50,6 +55,7 @@ export class DocumentsService {
       title: dto.title,
       originalName: stored.originalName,
       storagePath: stored.storagePath,
+      fileUrl: stored.storagePath.startsWith('http') ? stored.storagePath : null,
       mimeType: stored.mimeType,
       sizeBytes: stored.sizeBytes,
       status: DocumentStatus.QUEUED,
@@ -150,6 +156,7 @@ export class DocumentsService {
     await this.chunkModel.deleteMany({ documentId: doc._id });
 
     doc.storagePath = stored.storagePath;
+    doc.fileUrl = stored.storagePath.startsWith('http') ? stored.storagePath : null;
     doc.originalName = stored.originalName;
     doc.sizeBytes = stored.sizeBytes;
     doc.mimeType = stored.mimeType;
@@ -166,6 +173,43 @@ export class DocumentsService {
       .catch((err) => this.logger.error(`Error ingesting doc ${doc._id}: ${err.message}`));
 
     return this.mapToDto(doc);
+  }
+
+  async getFile(id: string): Promise<{
+    storagePath: string;
+    fileUrl?: string | null;
+    mimeType: string;
+    originalName: string;
+  }> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException(`Document ${id} not found`);
+    }
+
+    const doc = await this.docModel.findById(id).exec();
+    if (!doc) {
+      throw new NotFoundException(`Document ${id} not found`);
+    }
+
+    const fileUrl = doc.fileUrl || (doc.storagePath.startsWith('http') ? doc.storagePath : null);
+
+    return {
+      storagePath: doc.storagePath,
+      fileUrl,
+      mimeType: doc.mimeType || 'application/pdf',
+      originalName: doc.originalName,
+    };
+  }
+
+  async getFileBuffer(
+    id: string,
+  ): Promise<{ buffer: Buffer; mimeType: string; originalName: string }> {
+    const fileInfo = await this.getFile(id);
+    const buffer = await this.storageService.getFileBuffer(fileInfo.storagePath);
+    return {
+      buffer,
+      mimeType: fileInfo.mimeType,
+      originalName: fileInfo.originalName,
+    };
   }
 
   async reindex(id: string): Promise<DocumentDto> {
