@@ -38,3 +38,18 @@ This document records key technical decisions, rationale, and any deviations or 
 
 - **Decision**: Use `unpdf` for per-page text extraction.
 - **Rationale**: Lightweight, modern, worker-compatible, extracts text page-by-page to accurately link chunk citations to PDF page numbers.
+
+## 8. PDF Fixture Generation via `pdf-lib`
+
+- **Decision**: Use `pdf-lib` to dynamically generate valid multi-page A4 PDF documents with standard fonts and metadata for realistic testing and seeding.
+- **Rationale**: Ensures reproducible and self-contained sample data without external binary blobs or proprietary mock files in git.
+
+## 9. Token-Hashing Bag-of-Words Fallback Vector Space
+
+- **Decision**: Implement a deterministic normalized token-hashing bag-of-words vector space embedding fallback when `OPENAI_API_KEY` is not provided.
+- **Rationale**: Allows automated CI/CD and offline test suites to execute semantic search and citation validation deterministically without requiring external API keys.
+
+## 10. Global Exception Sanitization
+
+- **Decision**: Implement a global NestJS `AllExceptionsFilter` that intercepts all unhandled errors and maps them to sanitized standard HTTP error responses.
+- **Rationale**: Completely prevents database connection strings, internal query errors, or stack traces from leaking to clients.

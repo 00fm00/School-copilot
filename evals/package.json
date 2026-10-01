@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@school-copilot/shared": "workspace:*",
+    "api": "workspace:*",
     "axios": "^1.7.7"
   },
   "devDependencies": {

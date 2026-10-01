@@ -24,17 +24,55 @@ export class OpenAiEmbeddingProvider implements IEmbeddingProvider {
     }
   }
 
-  // Deterministic normalized embedding fallback for testing when no OpenAI key is set
+  // Deterministic normalized token-hashing embedding fallback for testing when no OpenAI key is set
   private generateFallbackEmbedding(text: string): number[] {
     const vector = new Array<number>(this.dimensions).fill(0);
-    let hash = 0;
-    for (let i = 0; i < text.length; i++) {
-      hash = (hash << 5) - hash + text.charCodeAt(i);
-      hash |= 0;
+    const stopWords = new Set([
+      'what',
+      'is',
+      'the',
+      'for',
+      'a',
+      'an',
+      'in',
+      'on',
+      'at',
+      'to',
+      'of',
+      'and',
+      'are',
+      'this',
+      'that',
+      'with',
+      'from',
+      'by',
+      'can',
+      'how',
+      'do',
+      'does',
+      'as',
+      'it',
+      'or',
+      'be',
+      'tell',
+      'show',
+      'give',
+      'me',
+      'you',
+    ]);
+    const tokens = (text.toLowerCase().match(/\w+/g) || []).filter((t) => !stopWords.has(t));
+    if (tokens.length === 0) return vector;
+
+    for (const token of tokens) {
+      let h = 0;
+      for (let i = 0; i < token.length; i++) {
+        h = (h << 5) - h + token.charCodeAt(i);
+        h |= 0;
+      }
+      const index = Math.abs(h) % this.dimensions;
+      vector[index] = (vector[index] ?? 0) + 1;
     }
-    for (let i = 0; i < this.dimensions; i++) {
-      vector[i] = Math.sin(hash + i);
-    }
+
     // Normalize vector
     const norm = Math.sqrt(vector.reduce((sum, val) => sum + val * val, 0)) || 1;
     return vector.map((val) => val / norm);
