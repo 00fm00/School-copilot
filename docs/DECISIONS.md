@@ -53,3 +53,8 @@ This document records key technical decisions, rationale, and any deviations or 
 
 - **Decision**: Implement a global NestJS `AllExceptionsFilter` that intercepts all unhandled errors and maps them to sanitized standard HTTP error responses.
 - **Rationale**: Completely prevents database connection strings, internal query errors, or stack traces from leaking to clients.
+
+## 11. Cloudinary Cloud Document Storage
+
+- **Decision**: Implement `CloudinaryStorageService` implementing `IStorageService` to upload, fetch, and delete documents in Cloudinary (`STORAGE_PROVIDER=cloudinary`), dynamically selected via NestJS factory while maintaining `LocalStorageService` as fallback.
+- **Rationale**: Removes local disk storage dependencies for production and multi-instance cloud deployments, hosting PDFs in the cloud and streaming them to the ingestion pipeline via secure URLs.

@@ -15,6 +15,14 @@ export const EnvSchema = z.object({
   UPLOAD_DIR: z.string().default('./storage/uploads'),
   MAX_UPLOAD_MB: z.coerce.number().default(20),
 
+  // Storage Provider (local or cloudinary)
+  STORAGE_PROVIDER: z.enum(['local', 'cloudinary']).default('local'),
+  CLOUDINARY_URL: z.string().optional().default(''),
+  CLOUDINARY_CLOUD_NAME: z.string().optional().default(''),
+  CLOUDINARY_API_KEY: z.string().optional().default(''),
+  CLOUDINARY_API_SECRET: z.string().optional().default(''),
+  CLOUDINARY_FOLDER: z.string().default('school_erp_documents'),
+
   LLM_PROVIDER: z.string().default('openai'),
   OPENAI_API_KEY: z.string().optional().default(''),
   LLM_MODEL: z.string().default('gpt-4o-mini'),

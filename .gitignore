@@ -14,8 +14,9 @@ build/
 *.pem
 
 # File uploads and local storage
-storage/
-uploads/
+/storage/
+/uploads/
+apps/api/storage/
 
 # Evals run results
 evals/results/*.json

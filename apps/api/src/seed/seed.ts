@@ -16,6 +16,8 @@ import { SemanticChunkerService } from '../ingestion/chunker/semantic-chunker.se
 import { OpenAiEmbeddingProvider } from '../llm/openai-embedding.provider';
 import { ConfigService } from '@nestjs/config';
 import { PdfParserService } from '../ingestion/parser/pdf-parser.service';
+import { LocalStorageService } from '../storage/local-storage.service';
+import { CloudinaryStorageService } from '../storage/cloudinary-storage.service';
 
 export interface SeedResult {
   classes: Record<string, string>;
@@ -166,13 +168,34 @@ export async function seedDatabase(mongoUri?: string): Promise<SeedResult> {
   const configService = new ConfigService();
   const embeddingProvider = new OpenAiEmbeddingProvider(configService);
 
+  // Storage service for saving fixtures
+  const storageService =
+    process.env.STORAGE_PROVIDER === 'cloudinary' ||
+    Boolean(process.env.CLOUDINARY_URL) ||
+    Boolean(process.env.CLOUDINARY_CLOUD_NAME)
+      ? new CloudinaryStorageService(configService)
+      : new LocalStorageService(configService);
+
   const adminId = userMap['admin@school.local']!;
   const docMap: Record<string, string> = {};
 
   for (const fixture of fixtures) {
     console.log(`[Seed] Processing Document: ${fixture.title}...`);
-    const filePath = path.join(uploadDir, fixture.filename);
-    fs.writeFileSync(filePath, fixture.buffer);
+    const fakeFile = {
+      buffer: fixture.buffer,
+      originalname: fixture.filename,
+      mimetype: 'application/pdf',
+      fieldname: 'file',
+      encoding: '7bit',
+      size: fixture.buffer.length,
+      destination: '',
+      filename: fixture.filename,
+      path: '',
+      stream: null as never,
+    } as Express.Multer.File;
+
+    const stored = await storageService.saveFile(fakeFile);
+    const storagePath = stored.storagePath;
 
     let audienceRoles: Role[] = [Role.TEACHER, Role.PARENT];
     let classScope: string[] = ['ALL'];
@@ -199,7 +222,7 @@ export async function seedDatabase(mongoUri?: string): Promise<SeedResult> {
       {
         $set: {
           originalName: fixture.filename,
-          storagePath: filePath,
+          storagePath,
           mimeType: 'application/pdf',
           sizeBytes: fixture.buffer.length,
           status: DocumentStatus.PROCESSING,
