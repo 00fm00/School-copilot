@@ -6,6 +6,9 @@ import { APP_GUARD } from '@nestjs/core';
 import { validateEnv } from './config/env.schema';
 import { HealthController } from './health/health.controller';
 import { AuthModule } from './auth/auth.module';
+import { ClassesModule } from './classes/classes.module';
+import { DocumentsModule } from './documents/documents.module';
+import { StorageModule } from './storage/storage.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 
 @Module({
@@ -31,6 +34,9 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
       },
     ]),
     AuthModule,
+    ClassesModule,
+    DocumentsModule,
+    StorageModule,
   ],
   controllers: [HealthController],
   providers: [
