@@ -33,7 +33,9 @@ export class RetrievalService {
     @Inject(EMBEDDING_PROVIDER) private embeddingProvider: IEmbeddingProvider,
     private configService: ConfigService,
   ) {
-    this.minScore = this.configService.get<number>('RETRIEVAL_MIN_SCORE', 0.6);
+    const hasApiKey = Boolean(this.configService.get<string>('OPENAI_API_KEY')?.trim());
+    const defaultMinScore = hasApiKey ? 0.6 : 0.02;
+    this.minScore = this.configService.get<number>('RETRIEVAL_MIN_SCORE', defaultMinScore);
     this.topK = this.configService.get<number>('RETRIEVAL_TOP_K', 6);
   }
 
@@ -100,8 +102,10 @@ export class RetrievalService {
       this.logger.debug(
         `Atlas $vectorSearch not available (${err.message}). Using resilient permission-filtered fallback.`,
       );
+    }
 
-      // Apply permission filter strictly inside MongoDB query
+    // Fallback if Atlas returned 0 results (e.g. index still building or offline hash vectors)
+    if (candidates.length === 0) {
       const matchingChunks = await this.chunkModel.find(filter).exec();
 
       candidates = matchingChunks
