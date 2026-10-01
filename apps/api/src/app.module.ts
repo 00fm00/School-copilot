@@ -9,6 +9,10 @@ import { AuthModule } from './auth/auth.module';
 import { ClassesModule } from './classes/classes.module';
 import { DocumentsModule } from './documents/documents.module';
 import { StorageModule } from './storage/storage.module';
+import { IngestionModule } from './ingestion/ingestion.module';
+import { RetrievalModule } from './retrieval/retrieval.module';
+import { LlmModule } from './llm/llm.module';
+import { ChatModule } from './chat/chat.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 
 @Module({
@@ -37,6 +41,10 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
     ClassesModule,
     DocumentsModule,
     StorageModule,
+    IngestionModule,
+    RetrievalModule,
+    LlmModule,
+    ChatModule,
   ],
   controllers: [HealthController],
   providers: [
