@@ -7,6 +7,7 @@ import { DocumentChunk, DocumentChunkDocument } from '../schemas/document-chunk.
 import { IStorageService, STORAGE_SERVICE } from '../storage/storage.interface';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
+import { IngestionService } from '../ingestion/ingestion.processor';
 
 @Injectable()
 export class DocumentsService {
@@ -16,6 +17,7 @@ export class DocumentsService {
     @InjectModel(AppDocument.name) private docModel: Model<AppDocumentDocument>,
     @InjectModel(DocumentChunk.name) private chunkModel: Model<DocumentChunkDocument>,
     @Inject(STORAGE_SERVICE) private storageService: IStorageService,
+    private ingestionService: IngestionService,
   ) {}
 
   private mapToDto(doc: AppDocumentDocument): DocumentDto {
@@ -58,6 +60,12 @@ export class DocumentsService {
     });
 
     this.logger.log(`Created document ${doc._id} (${doc.title}) in QUEUED status`);
+
+    // Trigger asynchronous ingestion
+    this.ingestionService
+      .processDocument({ documentId: doc._id.toString(), version: 1 })
+      .catch((err) => this.logger.error(`Error ingesting doc ${doc._id}: ${err.message}`));
+
     return this.mapToDto(doc);
   }
 
@@ -153,6 +161,10 @@ export class DocumentsService {
     await doc.save();
     this.logger.log(`Replaced file for document ${doc._id}. Incremented version to ${doc.version}`);
 
+    this.ingestionService
+      .processDocument({ documentId: doc._id.toString(), version: doc.version })
+      .catch((err) => this.logger.error(`Error ingesting doc ${doc._id}: ${err.message}`));
+
     return this.mapToDto(doc);
   }
 
@@ -171,6 +183,11 @@ export class DocumentsService {
     await doc.save();
 
     this.logger.log(`Marked document ${doc._id} for reindexing`);
+
+    this.ingestionService
+      .processDocument({ documentId: doc._id.toString(), version: doc.version })
+      .catch((err) => this.logger.error(`Error reindexing doc ${doc._id}: ${err.message}`));
+
     return this.mapToDto(doc);
   }
 

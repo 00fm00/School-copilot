@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppDocument, AppDocumentSchema } from '../schemas/document.schema';
 import { DocumentChunk, DocumentChunkSchema } from '../schemas/document-chunk.schema';
 import { StorageModule } from '../storage/storage.module';
+import { IngestionModule } from '../ingestion/ingestion.module';
 import { DocumentsController } from './documents.controller';
 import { DocumentsService } from './documents.service';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -14,6 +15,7 @@ import { RolesGuard } from '../common/guards/roles.guard';
       { name: DocumentChunk.name, schema: DocumentChunkSchema },
     ]),
     StorageModule,
+    IngestionModule,
   ],
   controllers: [DocumentsController],
   providers: [DocumentsService, RolesGuard],

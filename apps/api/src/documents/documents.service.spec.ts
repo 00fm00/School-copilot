@@ -82,6 +82,12 @@ describe('DocumentsService', () => {
           provide: STORAGE_SERVICE,
           useValue: mockStorageService,
         },
+        {
+          provide: require('../ingestion/ingestion.processor').IngestionService,
+          useValue: {
+            processDocument: jest.fn().mockResolvedValue(undefined),
+          },
+        },
       ],
     }).compile();
 
