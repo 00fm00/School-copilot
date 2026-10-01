@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.tsbuildinfo
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+
+# File uploads and local storage
+storage/
+uploads/
+
+# Evals run results
+evals/results/*.json
+!evals/results/.gitkeep
+
+# IDE and OS
+.DS_Store
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Test and coverage
+coverage/
+*.lcov

@@ -1,0 +1,19 @@
+{
+  "name": "evals",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "eval": "ts-node run-eval.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'evals: lint ok'"
+  },
+  "dependencies": {
+    "@school-copilot/shared": "workspace:*",
+    "axios": "^1.7.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
+}

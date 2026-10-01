@@ -1,0 +1,8 @@
+# Build and generated files
+dist
+build
+node_modules
+routeTree.gen.ts
+coverage
+evals/results
+pnpm-lock.yaml
