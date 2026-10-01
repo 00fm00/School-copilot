@@ -10,14 +10,28 @@ export class OpenAiLlmProvider implements ILlmProvider {
   private readonly model: string;
 
   constructor(private configService: ConfigService) {
-    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
-    this.model = this.configService.get<string>('LLM_MODEL', 'gpt-4o-mini');
+    const groqKey = this.configService.get<string>('GROQ_API_KEY');
+    const openAiKey = this.configService.get<string>('OPENAI_API_KEY');
+    const baseUrl = this.configService.get<string>('OPENAI_BASE_URL');
 
-    if (apiKey && apiKey.trim() !== '') {
-      this.openai = new OpenAI({ apiKey });
+    if (groqKey && groqKey.trim() !== '') {
+      this.openai = new OpenAI({
+        apiKey: groqKey,
+        baseURL: 'https://api.groq.com/openai/v1',
+      });
+      this.model = this.configService.get<string>('LLM_MODEL', 'llama-3.3-70b-versatile');
+      this.logger.log(`LLM Provider configured with Groq using model: ${this.model}`);
+    } else if (openAiKey && openAiKey.trim() !== '') {
+      this.openai = new OpenAI({
+        apiKey: openAiKey,
+        baseURL: baseUrl && baseUrl.trim() !== '' ? baseUrl : undefined,
+      });
+      this.model = this.configService.get<string>('LLM_MODEL', 'gpt-4o-mini');
+      this.logger.log(`LLM Provider configured with OpenAI using model: ${this.model}`);
     } else {
+      this.model = 'gpt-4o-mini';
       this.logger.warn(
-        'OPENAI_API_KEY is not set. LLM provider will use heuristic fallback for offline testing.',
+        'Neither OPENAI_API_KEY nor GROQ_API_KEY is set. LLM provider will use heuristic fallback for offline testing.',
       );
     }
   }

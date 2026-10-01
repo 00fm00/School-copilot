@@ -25,6 +25,8 @@ export const EnvSchema = z.object({
 
   LLM_PROVIDER: z.string().default('openai'),
   OPENAI_API_KEY: z.string().optional().default(''),
+  OPENAI_BASE_URL: z.string().optional().default(''),
+  GROQ_API_KEY: z.string().optional().default(''),
   LLM_MODEL: z.string().default('gpt-4o-mini'),
   EMBEDDING_MODEL: z.string().default('text-embedding-3-small'),
   EMBEDDING_DIMENSIONS: z.coerce.number().default(1536),
