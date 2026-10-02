@@ -105,7 +105,7 @@ export class RetrievalService {
     }
 
     const hasOpenAiKey = Boolean(this.configService.get<string>('OPENAI_API_KEY')?.trim());
-    const effectiveMinScore = hasOpenAiKey ? this.minScore : 0.50;
+    const effectiveMinScore = hasOpenAiKey ? this.minScore : 0.5;
 
     // Fallback if Atlas returned 0 results (e.g. index still building or offline hash vectors)
     if (candidates.length === 0) {
@@ -130,10 +130,45 @@ export class RetrievalService {
 
     // Step 2b: Hybrid Keyword Matching to complement vector search
     const stopWords = new Set([
-      'what', 'is', 'the', 'for', 'a', 'an', 'in', 'on', 'at', 'to', 'of', 'and', 'are',
-      'this', 'that', 'with', 'from', 'by', 'can', 'how', 'do', 'does', 'as', 'it', 'or',
-      'be', 'tell', 'show', 'give', 'me', 'you', 'where', 'when', 'who', 'why', 'about',
-      'currently', 'there', 'here'
+      'what',
+      'is',
+      'the',
+      'for',
+      'a',
+      'an',
+      'in',
+      'on',
+      'at',
+      'to',
+      'of',
+      'and',
+      'are',
+      'this',
+      'that',
+      'with',
+      'from',
+      'by',
+      'can',
+      'how',
+      'do',
+      'does',
+      'as',
+      'it',
+      'or',
+      'be',
+      'tell',
+      'show',
+      'give',
+      'me',
+      'you',
+      'where',
+      'when',
+      'who',
+      'why',
+      'about',
+      'currently',
+      'there',
+      'here',
     ]);
     const rawWords = question.toLowerCase().match(/\b[a-zA-Z0-9_-]{3,}\b/g) || [];
     const keywords = rawWords.filter((w) => !stopWords.has(w));
@@ -144,10 +179,7 @@ export class RetrievalService {
         const textMatches = await this.chunkModel
           .find({
             ...filter,
-            $or: [
-              { text: { $in: regexPatterns } },
-              { documentTitle: { $in: regexPatterns } },
-            ],
+            $or: [{ text: { $in: regexPatterns } }, { documentTitle: { $in: regexPatterns } }],
           })
           .limit(this.topK)
           .exec();
@@ -166,7 +198,7 @@ export class RetrievalService {
               page: match.page,
               chunkIndex: match.chunkIndex,
               text: match.text,
-              score: 0.80,
+              score: 0.8,
             });
           }
         }
