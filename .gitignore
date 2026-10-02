@@ -35,3 +35,6 @@ evals/results/*.json
 # Test and coverage
 coverage/
 *.lcov
+
+# Personal & internal interview preparation docs
+docs/PROJECT_EXPLAINER.md
