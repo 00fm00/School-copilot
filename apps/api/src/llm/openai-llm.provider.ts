@@ -19,7 +19,11 @@ export class OpenAiLlmProvider implements ILlmProvider {
         apiKey: groqKey,
         baseURL: 'https://api.groq.com/openai/v1',
       });
-      this.model = this.configService.get<string>('LLM_MODEL', 'llama-3.3-70b-versatile');
+      const configured = this.configService.get<string>('LLM_MODEL');
+      this.model =
+        configured && configured !== 'gpt-4o-mini' && configured !== 'llama-3.3-70b-versatile'
+          ? configured
+          : 'openai/gpt-oss-120b';
       this.logger.log(`LLM Provider configured with Groq using model: ${this.model}`);
     } else if (openAiKey && openAiKey.trim() !== '') {
       this.openai = new OpenAI({
@@ -45,16 +49,16 @@ export class OpenAiLlmProvider implements ILlmProvider {
       return this.generateFallbackAnswer(userQueryWithContext);
     }
 
-    try {
-      const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-        { role: 'system', content: systemPrompt },
-        ...history.map((m) => ({
-          role: m.role as 'system' | 'user' | 'assistant',
-          content: m.content,
-        })),
-        { role: 'user', content: userQueryWithContext },
-      ];
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+      { role: 'system', content: systemPrompt },
+      ...history.map((m) => ({
+        role: m.role as 'system' | 'user' | 'assistant',
+        content: m.content,
+      })),
+      { role: 'user', content: userQueryWithContext },
+    ];
 
+    try {
       const completion = await this.openai.chat.completions.create({
         model: this.model,
         messages,
@@ -63,6 +67,21 @@ export class OpenAiLlmProvider implements ILlmProvider {
 
       return completion.choices[0]?.message?.content || 'I could not generate an answer.';
     } catch (err: any) {
+      if (err?.status === 404) {
+        this.logger.warn(
+          `Model ${this.model} returned 404 on Groq. Attempting fallback model openai/gpt-oss-20b...`,
+        );
+        try {
+          const fallback = await this.openai.chat.completions.create({
+            model: 'openai/gpt-oss-20b',
+            messages,
+            temperature: 0.1,
+          });
+          return fallback.choices[0]?.message?.content || 'I could not generate an answer.';
+        } catch (fallbackErr: any) {
+          this.logger.error(`Fallback model error: ${fallbackErr.message}`);
+        }
+      }
       this.logger.error(`OpenAI LLM completion error: ${err.message}`, err.stack);
       throw err;
     }

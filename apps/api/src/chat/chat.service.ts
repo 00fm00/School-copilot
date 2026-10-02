@@ -110,13 +110,13 @@ export class ChatService {
     return { message: 'Chat session deleted successfully' };
   }
 
-  // Parse inline citations like [1], [2], [1, 2]
+  // Parse inline citations like [1], [2], [1, 2] or 【1】 or 【2†L9-L13】
   private parseCitations(
     answer: string,
     chunks: RetrievedChunk[],
   ): { citations: CitationDto[]; cleanedAnswer: string } {
     const citedBlockNumbers = new Set<number>();
-    const citationRegex = /\[(\d+(?:\s*,\s*\d+)*)\]/g;
+    const citationRegex = /(?:\[|【)(\d+(?:\s*,\s*\d+)*)(?:[†^:][^\]】]*)?(?:\]|】)/g;
     let match: RegExpExecArray | null;
 
     while ((match = citationRegex.exec(answer)) !== null) {
@@ -147,7 +147,8 @@ export class ChatService {
       }
     });
 
-    return { citations, cleanedAnswer: answer };
+    const cleanedAnswer = answer.replace(/【(\d+(?:\s*,\s*\d+)*)(?:[†^:][^】]*)?】/g, '[$1]');
+    return { citations, cleanedAnswer };
   }
 
   async sendMessage(

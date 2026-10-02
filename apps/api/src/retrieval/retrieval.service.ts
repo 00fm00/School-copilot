@@ -104,6 +104,9 @@ export class RetrievalService {
       );
     }
 
+    const hasOpenAiKey = Boolean(this.configService.get<string>('OPENAI_API_KEY')?.trim());
+    const effectiveMinScore = hasOpenAiKey ? this.minScore : 0.50;
+
     // Fallback if Atlas returned 0 results (e.g. index still building or offline hash vectors)
     if (candidates.length === 0) {
       const matchingChunks = await this.chunkModel.find(filter).exec();
@@ -125,12 +128,62 @@ export class RetrievalService {
         .slice(0, this.topK);
     }
 
-    // Step 3: Drop chunks below RETRIEVAL_MIN_SCORE
-    const filteredChunks = candidates.filter((c) => c.score >= this.minScore);
+    // Step 2b: Hybrid Keyword Matching to complement vector search
+    const stopWords = new Set([
+      'what', 'is', 'the', 'for', 'a', 'an', 'in', 'on', 'at', 'to', 'of', 'and', 'are',
+      'this', 'that', 'with', 'from', 'by', 'can', 'how', 'do', 'does', 'as', 'it', 'or',
+      'be', 'tell', 'show', 'give', 'me', 'you', 'where', 'when', 'who', 'why', 'about',
+      'currently', 'there', 'here'
+    ]);
+    const rawWords = question.toLowerCase().match(/\b[a-zA-Z0-9_-]{3,}\b/g) || [];
+    const keywords = rawWords.filter((w) => !stopWords.has(w));
+
+    if (keywords.length > 0) {
+      try {
+        const regexPatterns = keywords.map((k) => new RegExp(`\\b${k}`, 'i'));
+        const textMatches = await this.chunkModel
+          .find({
+            ...filter,
+            $or: [
+              { text: { $in: regexPatterns } },
+              { documentTitle: { $in: regexPatterns } },
+            ],
+          })
+          .limit(this.topK)
+          .exec();
+
+        for (const match of textMatches) {
+          const id = match._id.toString();
+          const existing = candidates.find((c) => c.chunkId === id);
+          if (existing) {
+            // Boost score if keyword also matched
+            existing.score = Math.max(existing.score, 0.85);
+          } else {
+            candidates.push({
+              chunkId: id,
+              documentId: match.documentId.toString(),
+              documentTitle: match.documentTitle,
+              page: match.page,
+              chunkIndex: match.chunkIndex,
+              text: match.text,
+              score: 0.80,
+            });
+          }
+        }
+      } catch (err: any) {
+        this.logger.debug(`Keyword search error: ${err.message}`);
+      }
+    }
+
+    // Re-sort candidates by score
+    candidates.sort((a, b) => b.score - a.score);
+
+    // Step 3: Drop chunks below effective score threshold
+    const filteredChunks = candidates.filter((c) => c.score >= effectiveMinScore);
 
     if (filteredChunks.length === 0) {
       this.logger.log(
-        `No chunks scored >= ${this.minScore}. Maximum candidate score was ${
+        `No chunks scored >= ${effectiveMinScore}. Maximum candidate score was ${
           candidates[0]?.score.toFixed(3) || 'none'
         }. Triggering refusal.`,
       );
