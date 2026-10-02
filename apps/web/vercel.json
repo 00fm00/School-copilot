@@ -1,6 +1,4 @@
 {
-  "buildCommand": "cd ../.. && pnpm --filter @school-copilot/shared build && pnpm --filter web build",
-  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/(.*)",

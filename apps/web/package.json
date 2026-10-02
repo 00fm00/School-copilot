@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "pnpm --filter @school-copilot/shared build",
     "build": "tsr generate && tsc && vite build",
     "preview": "vite preview",
     "typecheck": "tsr generate && tsc --noEmit",
