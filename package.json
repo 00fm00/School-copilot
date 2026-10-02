@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "pnpm --parallel --filter api --filter web dev",
     "build": "pnpm --filter shared build && pnpm --filter api build && pnpm --filter web build",
+    "build:api": "pnpm --filter shared build && pnpm --filter api build",
+    "start:api": "node apps/api/dist/main.js",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",

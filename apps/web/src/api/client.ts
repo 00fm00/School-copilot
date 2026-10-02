@@ -3,7 +3,11 @@ import { authStore } from '../lib/auth-store';
 import { AuthResponseDto } from '@school-copilot/shared';
 
 const rawApiUrl = import.meta.env.VITE_API_URL?.trim();
-const API_BASE_URL = rawApiUrl ? (rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`) : '/api';
+const API_BASE_URL = rawApiUrl
+  ? rawApiUrl.endsWith('/api')
+    ? rawApiUrl
+    : `${rawApiUrl}/api`
+  : '/api';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,

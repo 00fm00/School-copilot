@@ -4,9 +4,11 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: npm install -g pnpm && pnpm install --frozen-lockfile && pnpm --filter shared build && pnpm --filter api build
-    startCommand: node apps/api/dist/main.js
+    buildCommand: pnpm install --frozen-lockfile && pnpm build:api
+    startCommand: pnpm start:api
     envVars:
+      - key: NODE_VERSION
+        value: 20
       - key: NODE_ENV
         value: production
       - key: PORT
