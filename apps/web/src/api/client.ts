@@ -2,8 +2,11 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { authStore } from '../lib/auth-store';
 import { AuthResponseDto } from '@school-copilot/shared';
 
+const rawApiUrl = import.meta.env.VITE_API_URL?.trim();
+const API_BASE_URL = rawApiUrl ? (rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`) : '/api';
+
 export const apiClient = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -76,7 +79,7 @@ apiClient.interceptors.response.use(
 
     try {
       const response = await axios.post<AuthResponseDto>(
-        '/api/auth/refresh',
+        `${API_BASE_URL}/auth/refresh`,
         {},
         { withCredentials: true },
       );

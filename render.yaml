@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: school-erp-api
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install -g pnpm && pnpm install --frozen-lockfile && pnpm --filter shared build && pnpm --filter api build
+    startCommand: node apps/api/dist/main.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENAI_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: OPENAI_MODEL
+        value: openai/gpt-oss-120b
+      - key: CORS_ORIGIN
+        sync: false
