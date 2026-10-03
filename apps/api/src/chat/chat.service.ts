@@ -28,27 +28,30 @@ export class ChatService {
   async createSession(userId: string, title?: string): Promise<ChatSessionDto> {
     const trimmedTitle = title?.trim() || 'New Conversation';
 
-    // If caller requests a default 'New Conversation', reuse an existing 0-message session
-    if (trimmedTitle === 'New Conversation' && Types.ObjectId.isValid(userId)) {
-      const existingEmptySession = await this.sessionModel
-        .findOne({
-          userId: new Types.ObjectId(userId),
-          title: 'New Conversation',
-        })
+    // If an empty session (0 messages) is already present for this user, reuse it instead of creating duplicate empty chats
+    if (Types.ObjectId.isValid(userId)) {
+      const userSessions = await this.sessionModel
+        .find({ userId: new Types.ObjectId(userId) })
         .sort({ updatedAt: -1 })
         .exec();
 
-      if (existingEmptySession) {
+      for (const sess of userSessions) {
         const msgCount = await this.messageModel.countDocuments({
-          sessionId: existingEmptySession._id,
+          sessionId: sess._id,
         });
         if (msgCount === 0) {
+          // If a custom title was provided, update it
+          if (title && title.trim() && sess.title !== title.trim()) {
+            sess.title = title.trim();
+            await sess.save();
+          }
+
           return {
-            id: existingEmptySession._id.toString(),
-            userId: existingEmptySession.userId.toString(),
-            title: existingEmptySession.title,
-            createdAt: (existingEmptySession.createdAt || new Date()).toISOString(),
-            updatedAt: (existingEmptySession.updatedAt || new Date()).toISOString(),
+            id: sess._id.toString(),
+            userId: sess.userId.toString(),
+            title: sess.title,
+            createdAt: (sess.createdAt || new Date()).toISOString(),
+            updatedAt: (sess.updatedAt || new Date()).toISOString(),
           };
         }
       }

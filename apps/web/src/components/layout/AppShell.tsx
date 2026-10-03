@@ -3,7 +3,7 @@ import { Link, Outlet, useNavigate, useRouterState } from '@tanstack/react-route
 import { Role } from '@school-copilot/shared';
 import { authStore } from '../../lib/auth-store';
 import { useLogout } from '../../api/hooks/useAuth';
-import { useChatSessions, useDeleteSession } from '../../api/hooks/useChat';
+import { useChatSessions, useDeleteSession, useCreateSession } from '../../api/hooks/useChat';
 import {
   MessageSquare,
   FileText,
@@ -24,6 +24,7 @@ export function AppShell() {
   const navigate = useNavigate();
   const logoutMutation = useLogout();
   const deleteSessionMutation = useDeleteSession();
+  const createSessionMutation = useCreateSession();
   const { data: sessions = [], isLoading: isSessionsLoading } = useChatSessions();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
@@ -57,9 +58,14 @@ export function AppShell() {
     }
   };
 
-  const handleNewChat = () => {
+  const handleNewChat = async () => {
     setIsMobileOpen(false);
-    navigate({ to: '/chat' });
+    if (createSessionMutation.isPending) return;
+    try {
+      await createSessionMutation.mutateAsync();
+    } catch {
+      navigate({ to: '/chat' });
+    }
   };
 
   const confirmDeleteSession = async () => {
@@ -110,10 +116,15 @@ export function AppShell() {
         <div className="p-3.5 space-y-2 border-b border-white/[0.06] flex-shrink-0">
           <button
             onClick={handleNewChat}
-            className="w-full group flex items-center justify-between py-2 px-3 bg-white/[0.06] hover:bg-white/[0.1] text-slate-200 hover:text-white rounded-xl text-xs font-medium transition-all duration-150 border border-white/[0.08] shadow-xs active:scale-[0.99]"
+            disabled={createSessionMutation.isPending}
+            className="w-full group flex items-center justify-between py-2 px-3 bg-white/[0.06] hover:bg-white/[0.1] text-slate-200 hover:text-white rounded-xl text-xs font-medium transition-all duration-150 border border-white/[0.08] shadow-xs active:scale-[0.99] disabled:opacity-50"
           >
             <div className="flex items-center gap-2">
-              <Plus className="w-3.5 h-3.5 text-indigo-400 group-hover:rotate-90 transition-transform duration-200" />
+              {createSessionMutation.isPending ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-400" />
+              ) : (
+                <Plus className="w-3.5 h-3.5 text-indigo-400 group-hover:rotate-90 transition-transform duration-200" />
+              )}
               <span>New Conversation</span>
             </div>
             <span className="text-[10px] font-mono text-slate-400 px-1.5 py-0.5 rounded bg-white/[0.05] border border-white/[0.05]">
@@ -299,9 +310,14 @@ export function AppShell() {
 
           <button
             onClick={handleNewChat}
-            className="flex items-center gap-1 px-2.5 py-1 bg-white/10 hover:bg-white/15 text-white rounded-lg text-xs font-medium transition-colors"
+            disabled={createSessionMutation.isPending}
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-white/10 hover:bg-white/15 text-white rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
           >
-            <Plus className="w-3.5 h-3.5" />
+            {createSessionMutation.isPending ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+            ) : (
+              <Plus className="w-3.5 h-3.5" />
+            )}
             <span>New</span>
           </button>
         </header>

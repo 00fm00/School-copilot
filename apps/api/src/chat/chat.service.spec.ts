@@ -164,4 +164,39 @@ describe('ChatService', () => {
     expect(res.citations[0]!.page).toBe(1);
     expect(res.message.content).toContain('[1]');
   });
+
+  it('should reuse an existing empty session (0 messages) and not create a new one', async () => {
+    mockSessionModel.find.mockReturnValue({
+      sort: jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue([mockSession]),
+      }),
+    });
+    mockMessageModel.countDocuments.mockResolvedValue(0);
+
+    const session = await service.createSession(mockUserId.toString());
+    expect(session.id).toBe(mockSession._id.toString());
+    expect(mockSessionModel.create).not.toHaveBeenCalled();
+  });
+
+  it('should create a new session when existing sessions have messages', async () => {
+    mockSessionModel.find.mockReturnValue({
+      sort: jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue([mockSession]),
+      }),
+    });
+    mockMessageModel.countDocuments.mockResolvedValue(5); // session has 5 messages
+
+    const newCreatedSession = {
+      _id: new Types.ObjectId(),
+      userId: mockUserId,
+      title: 'New Conversation',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    mockSessionModel.create.mockResolvedValue(newCreatedSession);
+
+    const session = await service.createSession(mockUserId.toString());
+    expect(mockSessionModel.create).toHaveBeenCalled();
+    expect(session.id).toBe(newCreatedSession._id.toString());
+  });
 });
