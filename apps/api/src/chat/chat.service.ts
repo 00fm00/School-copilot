@@ -26,9 +26,37 @@ export class ChatService {
   ) {}
 
   async createSession(userId: string, title?: string): Promise<ChatSessionDto> {
+    const trimmedTitle = title?.trim() || 'New Conversation';
+
+    // If caller requests a default 'New Conversation', reuse an existing 0-message session
+    if (trimmedTitle === 'New Conversation' && Types.ObjectId.isValid(userId)) {
+      const existingEmptySession = await this.sessionModel
+        .findOne({
+          userId: new Types.ObjectId(userId),
+          title: 'New Conversation',
+        })
+        .sort({ updatedAt: -1 })
+        .exec();
+
+      if (existingEmptySession) {
+        const msgCount = await this.messageModel.countDocuments({
+          sessionId: existingEmptySession._id,
+        });
+        if (msgCount === 0) {
+          return {
+            id: existingEmptySession._id.toString(),
+            userId: existingEmptySession.userId.toString(),
+            title: existingEmptySession.title,
+            createdAt: (existingEmptySession.createdAt || new Date()).toISOString(),
+            updatedAt: (existingEmptySession.updatedAt || new Date()).toISOString(),
+          };
+        }
+      }
+    }
+
     const session = await this.sessionModel.create({
       userId: new Types.ObjectId(userId),
-      title: title?.trim() || 'New Conversation',
+      title: trimmedTitle,
     });
 
     return {

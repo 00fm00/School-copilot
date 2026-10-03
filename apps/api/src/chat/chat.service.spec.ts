@@ -56,6 +56,7 @@ describe('ChatService', () => {
     deleteMany: jest.fn().mockReturnValue({
       exec: jest.fn().mockResolvedValue({}),
     }),
+    countDocuments: jest.fn().mockResolvedValue(0),
   };
 
   const mockRetrievalService = {

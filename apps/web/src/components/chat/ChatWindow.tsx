@@ -130,31 +130,32 @@ export function ChatWindow({ sessionId }: ChatWindowProps) {
   return (
     <div className="flex-1 flex flex-col h-full bg-[#F8FAFC] overflow-hidden">
       {/* Top Security & Status Bar */}
-      <div className="h-12 px-6 bg-white border-b border-slate-200/80 flex items-center justify-between flex-shrink-0 z-10">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-500" />
-          <span className="text-xs font-semibold text-slate-800 tracking-tight">
-            Institutional Copilot Session
+      <div className="h-12 px-3 sm:px-6 bg-white border-b border-slate-200/80 flex items-center justify-between flex-shrink-0 z-10 gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+          <span className="text-xs font-semibold text-slate-800 tracking-tight truncate">
+            Institutional Copilot
           </span>
-          <span className="text-slate-300">|</span>
-          <span className="text-[11px] text-slate-500 font-mono">{user?.role} Context</span>
+          <span className="text-slate-300 hidden sm:inline">|</span>
+          <span className="text-[11px] text-slate-500 font-mono hidden sm:inline">{user?.role} Context</span>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center gap-1 text-[11px] font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">
-            <Lock className="w-3 h-3 text-emerald-600" />
-            <span>Zero-Leakage Guardrails</span>
+        <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+          <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">
+            <Lock className="w-3 h-3 text-emerald-600 flex-shrink-0" />
+            <span className="hidden sm:inline">Zero-Leakage Guardrails</span>
+            <span className="sm:hidden">Protected</span>
           </div>
-          <div className="flex items-center gap-1 text-[11px] font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">
-            <Cpu className="w-3 h-3 text-indigo-600" />
+          <div className="hidden sm:flex items-center gap-1 text-[11px] font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">
+            <Cpu className="w-3 h-3 text-indigo-600 flex-shrink-0" />
             <span>Hybrid Retrieval</span>
           </div>
         </div>
       </div>
 
       {/* Messages Scroll Canvas */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
           {isLoading ? (
             <div className="flex h-96 items-center justify-center text-slate-400">
               <Loader2 className="w-6 h-6 animate-spin mr-2.5 text-indigo-600" />
@@ -223,7 +224,7 @@ export function ChatWindow({ sessionId }: ChatWindowProps) {
 
                 {/* Message Bubble Card */}
                 <div
-                  className={`rounded-2xl p-5 text-[13px] leading-relaxed max-w-2xl shadow-sm transition-all ${
+                  className={`rounded-2xl p-4 sm:p-5 text-[13px] leading-relaxed max-w-[90%] sm:max-w-2xl shadow-sm transition-all ${
                     msg.role === 'user'
                       ? 'bg-slate-900 text-white border border-slate-800 rounded-tr-none'
                       : 'bg-white text-slate-800 border border-slate-200/90 rounded-tl-none'
@@ -361,10 +362,14 @@ export function ChatWindow({ sessionId }: ChatWindowProps) {
                 <button
                   onClick={() => handleSend()}
                   disabled={!input.trim() || sendMessageMutation.isPending}
-                  className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white disabled:opacity-30 disabled:hover:bg-slate-900 transition-all duration-150 shadow-sm"
+                  className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white disabled:opacity-30 disabled:hover:bg-slate-900 transition-all duration-150 shadow-sm flex items-center justify-center min-w-[32px] min-h-[32px]"
                   title="Send query"
                 >
-                  <Send className="w-3.5 h-3.5" />
+                  {sendMessageMutation.isPending ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                  ) : (
+                    <Send className="w-3.5 h-3.5" />
+                  )}
                 </button>
               </div>
             </div>
