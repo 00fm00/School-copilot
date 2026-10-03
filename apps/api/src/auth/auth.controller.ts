@@ -16,6 +16,7 @@ import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { RefreshDto } from './dto/refresh.dto';
 import { Public } from '../common/decorators/public.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
@@ -33,7 +34,7 @@ export class AuthController {
     res.cookie('refresh_token', token, {
       httpOnly: true,
       secure: isProd,
-      sameSite: 'lax',
+      sameSite: isProd ? 'none' : 'lax',
       path: '/api/auth',
       maxAge: ttlDays * 24 * 60 * 60 * 1000,
     });
@@ -51,6 +52,7 @@ export class AuthController {
     this.setRefreshCookie(res, result.refreshToken);
     return {
       accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
       user: result.user,
     };
   }
@@ -60,15 +62,20 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Rotate refresh token and issue new access token' })
   @ApiResponse({ status: 200, description: 'Token refreshed' })
-  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const refreshToken = req.cookies?.['refresh_token'];
+  async refresh(
+    @Body() dto: RefreshDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = dto?.refreshToken || req.cookies?.['refresh_token'];
     if (!refreshToken) {
-      throw new UnauthorizedException('No refresh token provided in cookie');
+      throw new UnauthorizedException('No refresh token provided');
     }
     const result = await this.authService.refresh(refreshToken);
     this.setRefreshCookie(res, result.refreshToken);
     return {
       accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
       user: result.user,
     };
   }
@@ -77,10 +84,21 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Log out and invalidate refresh token' })
   @ApiResponse({ status: 200, description: 'Successfully logged out' })
-  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const refreshToken = req.cookies?.['refresh_token'];
-    await this.authService.logout(refreshToken);
-    res.clearCookie('refresh_token', { path: '/api/auth' });
+  async logout(
+    @Body() dto: RefreshDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const isProd = this.configService.get<string>('NODE_ENV') === 'production';
+    const refreshToken = dto?.refreshToken || req.cookies?.['refresh_token'];
+    if (refreshToken) {
+      await this.authService.logout(refreshToken);
+    }
+    res.clearCookie('refresh_token', {
+      path: '/api/auth',
+      sameSite: isProd ? 'none' : 'lax',
+      secure: isProd,
+    });
     return { message: 'Logged out successfully' };
   }
 

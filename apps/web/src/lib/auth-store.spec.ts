@@ -53,4 +53,25 @@ describe('authStore', () => {
     authStore.clearAuth();
     expect(callCount).toBe(2);
   });
+
+  it('should store and clear refreshToken in storage', () => {
+    const mockUser = {
+      id: 'user-456',
+      email: 'teacher@school.local',
+      name: 'Teacher',
+      role: Role.TEACHER,
+      classIds: [],
+      isActive: true,
+    };
+
+    authStore.setAuth('jwt-access-123', mockUser, 'refresh-token-xyz');
+    expect(authStore.getAccessToken()).toBe('jwt-access-123');
+    expect(authStore.getRefreshToken()).toBe('refresh-token-xyz');
+    expect(localStorage.getItem('school_copilot_access_token')).toBe('jwt-access-123');
+    expect(localStorage.getItem('school_copilot_refresh_token')).toBe('refresh-token-xyz');
+
+    authStore.clearAuth();
+    expect(authStore.getRefreshToken()).toBeNull();
+    expect(localStorage.getItem('school_copilot_refresh_token')).toBeNull();
+  });
 });

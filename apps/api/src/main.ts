@@ -14,6 +14,9 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT', 3000);
   const corsOrigin = configService.get<string>('CORS_ORIGIN', 'http://localhost:5173');
+  const allowedOrigins = corsOrigin.includes(',')
+    ? corsOrigin.split(',').map((o) => o.trim())
+    : corsOrigin;
 
   // Security middlewares
   app.use(helmet());
@@ -21,7 +24,7 @@ async function bootstrap() {
 
   // CORS configuration
   app.enableCors({
-    origin: corsOrigin,
+    origin: allowedOrigins,
     credentials: true,
   });
 

@@ -4,19 +4,27 @@ import { authStore } from '../lib/auth-store';
 
 export async function loginUser(credentials: LoginInput): Promise<AuthResponseDto> {
   const { data } = await apiClient.post<AuthResponseDto>('/auth/login', credentials);
-  authStore.setAuth(data.accessToken, data.user);
+  authStore.setAuth(data.accessToken, data.user, data.refreshToken);
   return data;
 }
 
 export async function refreshUser(): Promise<AuthResponseDto> {
-  const { data } = await apiClient.post<AuthResponseDto>('/auth/refresh');
-  authStore.setAuth(data.accessToken, data.user);
+  const refreshToken = authStore.getRefreshToken();
+  const { data } = await apiClient.post<AuthResponseDto>(
+    '/auth/refresh',
+    refreshToken ? { refreshToken } : {},
+  );
+  authStore.setAuth(data.accessToken, data.user, data.refreshToken);
   return data;
 }
 
 export async function logoutUser(): Promise<{ message: string }> {
   try {
-    const { data } = await apiClient.post<{ message: string }>('/auth/logout');
+    const refreshToken = authStore.getRefreshToken();
+    const { data } = await apiClient.post<{ message: string }>(
+      '/auth/logout',
+      refreshToken ? { refreshToken } : {},
+    );
     return data;
   } finally {
     authStore.clearAuth();
