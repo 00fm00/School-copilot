@@ -9,7 +9,7 @@
     "build:api": "pnpm --filter shared build && pnpm --filter api build",
     "build:web": "pnpm --filter shared build && pnpm --filter web build",
     "start:api": "node apps/api/dist/main.js",
-    "typecheck": "pnpm -r typecheck",
+    "typecheck": "pnpm --filter @school-copilot/shared build && pnpm -r typecheck",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "seed": "pnpm --filter api seed",

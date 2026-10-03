@@ -8,6 +8,7 @@
     "prebuild": "pnpm --filter @school-copilot/shared build",
     "build": "tsr generate && tsc && vite build",
     "preview": "vite preview",
+    "pretypecheck": "pnpm --filter @school-copilot/shared build",
     "typecheck": "tsr generate && tsc --noEmit",
     "lint": "echo 'web: lint ok'",
     "test": "tsr generate && vitest run"
