@@ -328,8 +328,10 @@ export function DocumentsTable({ documents, isLoading }: DocumentsTableProps) {
               </div>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Are you sure you want to delete <strong className="text-slate-800 font-semibold">"{docToDelete.title}"</strong>?
-              This will permanently purge this document, its PDF asset from storage, and all associated vector embeddings from the retrieval index.
+              Are you sure you want to delete{' '}
+              <strong className="text-slate-800 font-semibold">"{docToDelete.title}"</strong>? This
+              will permanently purge this document, its PDF asset from storage, and all associated
+              vector embeddings from the retrieval index.
             </p>
             <div className="flex items-center justify-end gap-2.5 mt-6">
               <button

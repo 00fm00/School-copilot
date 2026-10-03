@@ -30,7 +30,9 @@ export function AppShell() {
   const currentPath = routerState.location.pathname;
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [sessionToDelete, setSessionToDelete] = useState<{ id: string; title: string } | null>(null);
+  const [sessionToDelete, setSessionToDelete] = useState<{ id: string; title: string } | null>(
+    null,
+  );
 
   const getRoleIcon = (role?: Role) => {
     switch (role) {

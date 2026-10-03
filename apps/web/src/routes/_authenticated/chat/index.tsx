@@ -163,7 +163,9 @@ function ChatIndexPage() {
               <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
                 Welcome, {user?.name || 'User'}
               </h2>
-              <p className="text-[11px] sm:text-xs text-slate-500">Verified Institutional AI Assistant</p>
+              <p className="text-[11px] sm:text-xs text-slate-500">
+                Verified Institutional AI Assistant
+              </p>
             </div>
           </div>
           <div

@@ -137,7 +137,9 @@ export function ChatWindow({ sessionId }: ChatWindowProps) {
             Institutional Copilot
           </span>
           <span className="text-slate-300 hidden sm:inline">|</span>
-          <span className="text-[11px] text-slate-500 font-mono hidden sm:inline">{user?.role} Context</span>
+          <span className="text-[11px] text-slate-500 font-mono hidden sm:inline">
+            {user?.role} Context
+          </span>
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
